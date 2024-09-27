@@ -7,8 +7,7 @@ import os
 from langchain.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 
-api_key = "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"
-os.environ['OPENAI_API_KEY'] = api_key
+os.environ['OPENAI_API_KEY'] = st.secrets["open_ai_api_key"]
 
 PROMPT_TEMPLATE = """
 Beantwoord de vraag op basis van alleen de volgende context:
@@ -57,7 +56,6 @@ if prompt:
     # Set up vector store
     vector_store = get_vector_store()
     sources = vector_store.similarity_search(prompt, k=2)
-    print(sources)
     # Extract the sources
     sources_text = ""
     for source in sources:
