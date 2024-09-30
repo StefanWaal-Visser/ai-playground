@@ -7,7 +7,7 @@ import os
 from langchain.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 
-os.environ['OPENAI_API_KEY'] = st.secrets["open_ai_api_key"]
+os.environ['OPENAI_API_KEY'] = ""
 
 PROMPT_TEMPLATE = """
 Beantwoord de vraag op basis van alleen de volgende context:
