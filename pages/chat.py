@@ -1,13 +1,13 @@
 import streamlit as st
 from langchain_community.document_loaders import PyPDFLoader
-from langchain_core.vectorstores import InMemoryVectorStore
+from langchain_chroma import Chroma
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_openai import OpenAIEmbeddings
 import os
 from langchain.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 
-os.environ['OPENAI_API_KEY'] = ""
+os.environ['OPENAI_API_KEY'] = st.secrets["open_ai_api_key"]
 
 PROMPT_TEMPLATE = """
 Beantwoord de vraag op basis van alleen de volgende context:
@@ -19,6 +19,7 @@ Beantwoord de vraag op basis van alleen de volgende context:
 Beantwoord de vraag op basis van de bovenstaande context: {question}
 """
 
+
 @st.cache_data
 def get_pages():
     loader = PyPDFLoader("data/deloitte-nl-audit-handboek-externe-verslaggeving-2023.pdf")
@@ -26,6 +27,7 @@ def get_pages():
     for page in loader.lazy_load():
         pages.append(page)
     return pages
+
 
 @st.cache_data
 def get_chunks():
@@ -38,9 +40,22 @@ def get_chunks():
     pages = get_pages()
     return text_splitter.split_documents(pages)
 
-def get_vector_store():
+
+def save_vector_store():
     chunks = get_chunks()
-    return InMemoryVectorStore.from_documents(chunks, OpenAIEmbeddings())
+    vector_store = Chroma(
+        collection_name="chat_handboek",
+        embedding_function=OpenAIEmbeddings(),
+        persist_directory="Chroma")
+    vector_store.add_documents(chunks)
+
+
+def get_vector_store():
+    return Chroma(
+        collection_name="chat_handboek",
+        embedding_function=OpenAIEmbeddings(),
+        persist_directory="Chroma")
+
 
 st.title("Chat met Handboek Externe verslaggeving")
 prompt = st.chat_input("Stel je vraag")
@@ -72,4 +87,6 @@ if prompt:
     # Ask ChatGPT the question
     response = ChatOpenAI().invoke(prompt)
     answer_block.text(response.content)
-    
+    # Ask ChatGPT the question
+    response = ChatOpenAI().invoke(prompt)
+    answer_block.text(response.content)
